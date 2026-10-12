@@ -1,0 +1,849 @@
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-deep:#1E2B29;
+    --paper:#F6F1E7;
+    --paper-dim:#EDE6D6;
+    --line:#D8CFBB;
+    --ene:#C97B3D;
+    --pre:#A5556B;
+    --rec:#4F7C82;
+    --vin:#8E9B6C;
+    --lim:#6C8EAE;
+    --inercia:#B85C38;
+    --ink-on-paper:#2A2620;
+    --muted-on-dark:#B9C7C2;
+  }
+  *{box-sizing:border-box;}
+  .rd-root{
+    font-family:'Work Sans', sans-serif;
+    background:var(--ink-deep);
+    color:var(--paper);
+    border-radius:18px;
+    overflow:hidden;
+    min-height:660px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  .rd-eyebrow{
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted-on-dark);
+    font-weight:500;
+  }
+  h1,h2,h3{font-family:'Fraunces', serif; margin:0; font-weight:600;}
+
+  .rd-screen{display:none; flex-direction:column; flex:1; padding:36px 32px 28px;}
+  .rd-screen.active{display:flex;}
+  .rd-intro h1{font-size:clamp(24px,4vw,34px); line-height:1.18; color:var(--paper); margin:10px 0 6px; max-width:520px;}
+  .rd-intro .rd-tag{color:var(--ene); font-size:13.5px; font-weight:600; margin-bottom:4px;}
+  .rd-intro p{color:var(--muted-on-dark); font-size:14.5px; line-height:1.6; max-width:480px; margin:0 0 18px;}
+  .rd-intro .rd-position{
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:13px;
+    line-height:1.55;
+    color:var(--paper-dim);
+    margin-bottom:20px;
+    max-width:480px;
+  }
+  .rd-dims-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;}
+  .rd-dim-chip{
+    font-size:11.5px; font-weight:600; letter-spacing:.02em;
+    padding:6px 12px; border-radius:100px; color:var(--ink-deep);
+  }
+  .rd-start-btn{
+    margin-top:auto; align-self:flex-start; background:var(--ene); color:var(--ink-deep);
+    border:none; font-family:'Work Sans', sans-serif; font-weight:600; font-size:15px;
+    padding:14px 26px; border-radius:100px; cursor:pointer; transition:transform .15s ease, background .2s ease;
+  }
+  .rd-start-btn:hover{transform:translateY(-1px); background:#DB8B4C;}
+
+  .rd-progress-wrap{padding:18px 32px 0;}
+  .rd-progress-track{height:3px; background:rgba(255,255,255,.12); border-radius:2px; overflow:hidden;}
+  .rd-progress-fill{height:100%; background:var(--ene); width:0%; transition:width .4s ease;}
+  .rd-progress-label{font-size:12px; color:var(--muted-on-dark); margin-top:8px; letter-spacing:.04em;}
+
+  .rd-case-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:20px 24px 30px;}
+  .rd-card{
+    background:var(--paper); color:var(--ink-on-paper); border-radius:14px; padding:30px 28px;
+    max-width:560px; width:100%; box-shadow:0 20px 40px -18px rgba(0,0,0,.45);
+    opacity:0; transform:translateY(10px); animation:rdIn .38s ease forwards;
+  }
+  @keyframes rdIn{to{opacity:1; transform:translateY(0);}}
+  .rd-card-label{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8A7F68; font-weight:600; margin-bottom:10px;}
+  .rd-card p.rd-scenario{font-size:16.5px; line-height:1.55; margin:0 0 22px; color:var(--ink-on-paper);}
+  .rd-options{display:flex; flex-direction:column; gap:8px;}
+  .rd-option{
+    text-align:left; background:transparent; border:1px solid var(--line); color:var(--ink-on-paper);
+    padding:13px 16px; border-radius:10px; font-family:'Work Sans', sans-serif; font-size:14.5px;
+    line-height:1.45; cursor:pointer; transition:border-color .15s ease, background .15s ease;
+  }
+  .rd-option:hover{border-color:#8A7F68; background:var(--paper-dim);}
+  .rd-option.selected{border-color:var(--ene); background:#FBEADA;}
+
+  .rd-results{padding:34px 32px 30px; overflow-y:auto;}
+  .rd-results h2{font-size:21px; color:var(--paper); margin:6px 0 18px;}
+
+  .rd-total-block{
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:12px;
+    padding:18px 20px; margin-bottom:18px;
+  }
+  .rd-total-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; flex-wrap:wrap; gap:6px;}
+  .rd-total-score{font-family:'Fraunces', serif; font-size:22px; color:var(--paper);}
+  .rd-total-band{font-size:13px; font-weight:600; padding:4px 10px; border-radius:100px; color:var(--ink-deep);}
+  .rd-bar-track{height:8px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden;}
+  .rd-bar-fill{height:100%; border-radius:6px; transition:width .8s ease;}
+  .rd-total-text{font-size:13.5px; color:var(--paper-dim); margin-top:10px; line-height:1.55;}
+
+  .rd-radar-block{display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; margin-bottom:22px;}
+  .rd-radar-svg{flex:0 0 auto;}
+  .rd-legend{flex:1; min-width:220px; display:flex; flex-direction:column; gap:10px;}
+  .rd-legend-row{display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--paper-dim);}
+  .rd-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .rd-legend-name{flex:1;}
+  .rd-legend-pct{font-family:'Fraunces', serif; color:var(--paper); font-size:14px;}
+
+  .rd-inercia-block{
+    background:linear-gradient(135deg, rgba(184,92,56,.14), rgba(184,92,56,.04));
+    border:1px solid rgba(184,92,56,.35); border-radius:12px; padding:20px 22px; margin-bottom:22px;
+  }
+  .rd-inercia-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;}
+  .rd-inercia-title{font-family:'Fraunces', serif; font-size:16.5px; color:var(--paper);}
+  .rd-inercia-score{font-family:'Fraunces', serif; font-size:15px; color:var(--inercia);}
+  .rd-inercia-text{font-size:14px; line-height:1.6; color:var(--paper-dim); margin-top:8px;}
+
+  .rd-reading{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:20px 22px;}
+  .rd-reading h3{font-size:16px; color:var(--paper); margin-bottom:8px;}
+  .rd-reading p{font-size:14.5px; line-height:1.6; color:var(--paper-dim); margin:0;}
+
+  .rd-reflect{margin-top:26px;}
+  .rd-reflect label{display:block; font-family:'Fraunces', serif; font-size:16px; color:var(--paper); margin-bottom:10px;}
+  .rd-reflect textarea{
+    width:100%; min-height:70px; background:var(--paper); color:var(--ink-on-paper); border:none;
+    border-radius:10px; padding:12px 14px; font-family:'Work Sans', sans-serif; font-size:14px; resize:vertical;
+  }
+  .rd-cta{margin-top:22px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .rd-cta-btn{
+    background:var(--ene); color:var(--ink-deep); border:none; font-weight:600; font-size:14.5px;
+    padding:13px 22px; border-radius:100px; cursor:pointer; font-family:'Work Sans', sans-serif;
+  }
+  .rd-cta-btn:hover{background:#DB8B4C;}
+  .rd-cta-note{font-size:12.5px; color:var(--muted-on-dark);}
+  .rd-thanks{font-size:13.5px; color:var(--rec); display:none;}
+
+  .rd-position strong{color:var(--paper);}
+  .rd-position p{margin:8px 0 0; font-size:13px; line-height:1.55; color:var(--paper-dim);}
+  .rd-info{margin-top:22px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:20px 22px;}
+  .rd-info h3{font-size:16px; color:var(--paper); margin:0 0 8px;}
+  .rd-info h3.rd-h-next{margin-top:16px;}
+  .rd-info p, .rd-info li{font-size:14px; line-height:1.6; color:var(--paper-dim);}
+  .rd-info p{margin:0 0 8px;}
+  .rd-info ol{margin:0 0 10px; padding-left:20px;}
+  .rd-info .rd-safety{border-left:3px solid var(--ene); padding-left:12px;}
+  .rd-ficha{margin-top:26px; border-top:1px solid rgba(255,255,255,.12); padding-top:24px;}
+  .rd-ficha-lead{font-size:14px; line-height:1.6; color:var(--paper-dim); margin:0 0 14px;}
+  .rd-tabs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; align-items:center;}
+  .rd-tabs-hint{width:100%; font-size:13px; color:var(--muted-on-dark);}
+  .rd-tab{border:1px solid rgba(255,255,255,.25); background:transparent; color:var(--paper); padding:7px 14px; border-radius:100px; font-family:'Work Sans', sans-serif; font-size:13px; cursor:pointer;}
+  .rd-tab.on{background:var(--ene); color:var(--ink-deep); border-color:var(--ene);}
+  .rd-tool{background:linear-gradient(135deg, rgba(201,123,61,.14), rgba(201,123,61,.04)); border:1px solid rgba(201,123,61,.35); border-radius:12px; padding:18px 20px; margin-bottom:18px;}
+  .rd-tool h3{font-size:16px; color:var(--paper); margin:0 0 6px;}
+  .rd-tool p, .rd-tool li{font-size:14px; line-height:1.6; color:var(--paper-dim); margin:0 0 6px;}
+  .rd-tool ul{margin:0 0 6px; padding-left:20px;}
+  .rd-tool .rd-quote{font-family:'Fraunces', serif; font-style:italic; color:var(--paper);}
+  .rd-tool .rd-note{font-size:12.5px; color:var(--muted-on-dark);}
+  .rd-signal{font-size:14px; color:var(--paper); background:rgba(255,255,255,.05); border-radius:8px; padding:10px 12px; margin-bottom:16px;}
+  .rd-field{margin-bottom:16px;}
+  .rd-field label{display:block; font-family:'Fraunces', serif; font-size:15px; color:var(--paper); margin-bottom:8px;}
+  .rd-field textarea{width:100%; min-height:64px; background:var(--paper); color:var(--ink-on-paper); border:none; border-radius:10px; padding:12px 14px; font-family:'Work Sans', sans-serif; font-size:14px; resize:vertical;}
+  .rd-matrix{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px;}
+  .rd-matrix .rd-field{margin-bottom:0;}
+  .rd-matrix label{font-size:13.5px;}
+  .rd-copy-msg{font-size:13px; color:var(--rec); display:none;}
+
+  @media (max-width:520px){
+    .rd-matrix{grid-template-columns:1fr;}
+    .rd-screen{padding:26px 18px 20px;}
+    .rd-case-wrap{padding:14px 8px 24px;}
+    .rd-card{padding:22px 18px;}
+    .rd-results{padding:26px 18px 24px;}
+    .rd-radar-block{gap:18px;}
+  }
+</style>
+
+<div class="rd-root" id="rdRoot">
+
+  <!-- INTRO -->
+  <div class="rd-screen active" id="rdIntro">
+    <span class="rd-tag">Test de Desgaste e Inercia Laboral</span>
+    <h1>Descubre en 5 minutos cuánto te está afectando el trabajo — y si estás esperando a que se resuelva solo.</h1>
+    <div class="rd-position">
+      <strong>¿Qué debes saber antes de empezar?</strong>
+      <p>Este test es una herramienta de autoobservación y sensibilización sobre el desgaste y la inercia laboral. Está inspirado en modelos de investigación sobre el desgaste profesional, como Maslach, Copenhagen, Oldenburg y el modelo de Demandas y Recursos Laborales (JD-R).</p>
+      <p>Tus resultados te ayudarán a identificar señales de desgaste, reconocer qué áreas de tu vida laboral pueden estar viéndose afectadas y reflexionar sobre posibles acciones.</p>
+      <p><strong>Importante:</strong> este test no es una prueba diagnóstica, no determina si tienes burnout ni sustituye una evaluación profesional. Sus puntuaciones son orientativas y deben interpretarse teniendo en cuenta tu situación personal y tus condiciones de trabajo.</p>
+      <p>El desgaste laboral no es necesariamente un problema individual. La carga de trabajo, la falta de apoyo, el liderazgo, el reconocimiento y la autonomía también pueden influir en cómo te encuentras.</p>
+      <p>Responde pensando en tu experiencia real, sin juzgarte.</p>
+    </div>
+    <p>21 situaciones breves. Elige lo que más se parezca a ti — no hay respuesta correcta. Al final verás tu mapa en 5 dimensiones y tu Índice de Inercia.</p>
+    <div class="rd-dims-row">
+      <span class="rd-dim-chip" style="background:var(--ene)">Energía</span>
+      <span class="rd-dim-chip" style="background:var(--rec)">Recuperación</span>
+      <span class="rd-dim-chip" style="background:var(--vin)">Vinculación</span>
+      <span class="rd-dim-chip" style="background:var(--pre)">Presión</span>
+      <span class="rd-dim-chip" style="background:var(--lim)">Límites</span>
+    </div>
+    <button class="rd-start-btn" id="rdStartBtn">Empezar · 5 minutos →</button>
+  </div>
+
+  <!-- PROGRESS + CASE -->
+  <div id="rdCaseScreen" class="rd-screen" style="padding:0;">
+    <div class="rd-progress-wrap">
+      <div class="rd-progress-track"><div class="rd-progress-fill" id="rdProgressFill"></div></div>
+      <div class="rd-progress-label" id="rdProgressLabel">Situación 1 de 21</div>
+    </div>
+    <div class="rd-case-wrap">
+      <div class="rd-card" id="rdCard">
+        <div class="rd-card-label" id="rdCardLabel">Situación</div>
+        <p class="rd-scenario" id="rdScenarioText"></p>
+        <div class="rd-options" id="rdOptions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="rd-screen" id="rdResults">
+    <div class="rd-results">
+      <span class="rd-eyebrow">Tu resultado</span>
+      <h2>Esto es lo que muestra esta semana</h2>
+
+      <div class="rd-total-block">
+        <div class="rd-total-top">
+          <span class="rd-total-score" id="rdTotalScore">-- / 80</span>
+          <span class="rd-total-band" id="rdTotalBand">--</span>
+        </div>
+        <div class="rd-bar-track"><div class="rd-bar-fill" id="rdTotalBarFill"></div></div>
+        <p class="rd-total-text" id="rdTotalText"></p>
+      </div>
+
+      <div class="rd-radar-block">
+        <div class="rd-radar-svg" id="rdRadarSvg"></div>
+        <div class="rd-legend" id="rdLegend"></div>
+      </div>
+
+      <div class="rd-inercia-block">
+        <div class="rd-inercia-top">
+          <span class="rd-inercia-title">Índice de Inercia</span>
+          <span class="rd-inercia-score" id="rdInerciaScore">-- / 16</span>
+        </div>
+        <div class="rd-bar-track"><div class="rd-bar-fill" id="rdInerciaBarFill" style="background:var(--inercia)"></div></div>
+        <p class="rd-inercia-text" id="rdInerciaText"></p>
+      </div>
+
+      <div class="rd-reading" id="rdReading"></div>
+
+      <div class="rd-info">
+        <h3>Cómo interpretar tus resultados</h3>
+        <p>Tu puntuación es una referencia para observar lo que estás viviendo, no una etiqueta sobre ti ni un diagnóstico.</p>
+        <p>Las dimensiones con mayor puntuación señalan áreas en las que merece la pena detenerse y explorar qué está ocurriendo. El índice de inercia invita a reflexionar sobre tu margen de acción y las posibles barreras que dificultan los cambios. Una puntuación elevada no significa que te falte voluntad: quizá necesites apoyo, más recursos o cambios en tus condiciones laborales.</p>
+        <h3 class="rd-h-next">¿Qué puedes hacer ahora?</h3>
+        <ol>
+          <li>Identifica la señal que más te preocupa.</li>
+          <li>Distingue qué depende de ti, sobre qué puedes influir y qué requiere cambios en tu entorno laboral.</li>
+          <li>Elige una acción pequeña y realista para empezar a abordar la situación.</li>
+        </ol>
+        <p class="rd-safety">Si experimentas un agotamiento intenso o persistente, dificultades importantes para dormir, malestar emocional significativo o un deterioro de tu vida personal, no te limites a aplicar consejos de autocuidado. Considera consultar con un profesional sanitario para valorar tu situación y determinar qué apoyo necesitas.</p>
+        <p>Este test es un punto de partida para comprenderte mejor y tomar decisiones informadas. No tienes que resolverlo todo por tu cuenta.</p>
+      </div>
+
+      <div class="rd-reflect">
+        <label for="rdReflectInput">Si pudieras cambiar una sola cosa de esto en los próximos tres meses, ¿cuál sería?</label>
+        <textarea id="rdReflectInput" placeholder="Escribe aquí (opcional, solo para ti)"></textarea>
+      </div>
+
+      <div class="rd-ficha" id="rdFicha">
+        <span class="rd-eyebrow">Tu ficha</span>
+        <h2>Mi primer paso para recuperar margen</h2>
+        <p class="rd-ficha-lead" id="rdFichaLead"></p>
+        <div class="rd-tabs" id="rdTabs"></div>
+        <div class="rd-tool" id="rdTool"></div>
+        <div class="rd-signal" id="rdFichaSignal"></div>
+
+        <div class="rd-field"><label for="f_ocurre" id="l_ocurre">Qué está ocurriendo en mi caso</label>
+          <textarea id="f_ocurre" placeholder="Un ejemplo concreto de tu situación laboral reciente."></textarea></div>
+
+        <div class="rd-matrix" id="rdMatrix">
+          <div class="rd-field"><label for="f_dep">Depende de mí</label>
+            <textarea id="f_dep" placeholder="Acciones o decisiones bajo mi control directo."></textarea></div>
+          <div class="rd-field"><label for="f_inf">Puedo influir</label>
+            <textarea id="f_inf" placeholder="Lo que requiere una conversación o negociación."></textarea></div>
+          <div class="rd-field"><label for="f_nodep">No depende de mí</label>
+            <textarea id="f_nodep" placeholder="Condiciones o decisiones que no puedo cambiar solo/a."></textarea></div>
+        </div>
+
+        <div class="rd-field"><label for="f_accion">Mi acción realista para los próximos 7 días</label>
+          <textarea id="f_accion"></textarea></div>
+
+        <div class="rd-field" id="rdConvField"><label for="f_conv">Qué conversación o petición podría ayudar</label>
+          <textarea id="f_conv"></textarea></div>
+
+        <div class="rd-field"><label for="f_senal">Cómo sabré si me ayuda</label>
+          <textarea id="f_senal" placeholder="Una señal observable que revisaré dentro de una semana."></textarea></div>
+
+        <div class="rd-cta">
+          <button class="rd-cta-btn" id="rdCopyBtn" type="button">Copiar mi ficha</button>
+          <span class="rd-copy-msg" id="rdCopyMsg">Copiada. Pégala donde quieras guardarla.</span>
+        </div>
+        <p class="rd-cta-note" style="margin-top:10px">Lo que escribes se queda en tu navegador. No se envía a ningún sitio.</p>
+      </div>
+
+      <div class="rd-cta" style="margin-top:30px">
+        <button class="rd-cta-btn" id="rdCtaBtn">Quiero profundizar en esto →</button>
+        <span class="rd-cta-note">Prototipo — aquí iría el enlace a tu recurso o a agendar una conversación.</span>
+        <span class="rd-thanks" id="rdThanks">Gracias — esto quedaría enviado a tu proceso de seguimiento.</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const DIMS = {
+    ENE:{name:'Energía', color:'#C97B3D',
+      text:'Aparece con fuerza la sensación de no tener energía de sobra: para el resto del día, para lo que solías disfrutar, para tu propio estado de ánimo. El cuerpo y el ánimo están dando señales que vale la pena escuchar.'},
+    REC:{name:'Recuperación', color:'#4F7C82',
+      text:'Lo que más resuena es que el descanso ya no descansa del todo: ni el sueño, ni el fin de semana, ni desconectar por la noche. Recuperarte de verdad se ha vuelto más difícil de lo que debería.'},
+    VIN:{name:'Vinculación', color:'#8E9B6C',
+      text:'Se repite una distancia creciente con el trabajo: menos ilusión, más automatismo, más ganas de alejarte, más dudas sobre tu propia capacidad. No es que hayas dejado de ser bueno/a en lo tuyo — es que la conexión con lo que haces se está desgastando.'},
+    PRE:{name:'Presión', color:'#A5556B',
+      text:'Lo que más pesa es la sensación de ir siempre por detrás: el esfuerzo sube cada semana, el ritmo supera lo que puedes dar, y por mucho que hagas, no sientes que sea suficiente.'},
+    LIM:{name:'Límites', color:'#6C8EAE',
+      text:'Aparece con fuerza la dificultad para poner límites: cuesta decir que no, el trabajo se cuela en tu vida personal, y aunque notas que necesitas parar, sigues funcionando igual. Poner un límite no es fallar — es una forma de cuidar lo que sostienes.'}
+  };
+
+  // dim:null + inertia:true => cuenta solo para el Índice de Inercia (no en el total ni en el radar)
+  const CASES = [
+    {dim:'ENE', text:'Termina tu jornada laboral. ¿Qué tan seguido sientes que no te queda energía para nada más?',
+      opts:[
+        {t:'Casi nunca; suelo tener margen para otras cosas.', v:0},
+        {t:'Rara vez; normalmente me queda algo de energía.', v:1},
+        {t:'Algunas veces, depende de la semana.', v:2},
+        {t:'Con frecuencia, ya casi doy por hecho que llego seco/a.', v:3},
+        {t:'Casi siempre; no me queda nada para el resto del día.', v:4}
+      ]},
+    {dim:'REC', text:'Por las mañanas, después de dormir tus horas habituales...',
+      opts:[
+        {t:'Me levanto descansado/a casi siempre.', v:0},
+        {t:'Casi siempre descanso bien, con alguna excepción.', v:1},
+        {t:'A veces me levanto cansado/a aunque haya dormido bien.', v:2},
+        {t:'Con frecuencia me levanto cansado/a aunque duerma las horas.', v:3},
+        {t:'Casi siempre me levanto agotado/a, duerma lo que duerma.', v:4}
+      ]},
+    {dim:'VIN', text:'Tu interés o ilusión por lo que haces, comparado con hace un tiempo...',
+      opts:[
+        {t:'Sigue intacto.', v:0},
+        {t:'Ha bajado un poco, algo normal con el tiempo.', v:1},
+        {t:'He perdido parte del interés que tenía.', v:2},
+        {t:'He perdido bastante la ilusión que tenía por esto.', v:3},
+        {t:'Apenas queda ilusión por lo que hago.', v:4}
+      ]},
+    {dim:'PRE', text:'Semana a semana, el esfuerzo que necesitas para sacar el trabajo adelante...',
+      opts:[
+        {t:'Es más o menos el mismo de siempre.', v:0},
+        {t:'Sube algo, pero nada que no pueda manejar.', v:1},
+        {t:'Noto que cada semana necesito un poco más de esfuerzo.', v:2},
+        {t:'Cada semana me cuesta bastante más que antes.', v:3},
+        {t:'El esfuerzo que necesito ya es casi insostenible.', v:4}
+      ]},
+    {dim:'LIM', text:'Mensajes, llamadas o correos del trabajo que llegan fuera de tu horario...',
+      opts:[
+        {t:'Los dejo para el día siguiente sin culpa.', v:0},
+        {t:'Casi siempre los dejo para el día siguiente.', v:1},
+        {t:'A veces los atiendo aunque podrían esperar.', v:2},
+        {t:'Los atiendo con frecuencia; me cuesta no hacerlo.', v:3},
+        {t:'Estoy pendiente casi siempre, aunque sea mi tiempo libre.', v:4}
+      ]},
+    {dim:'ENE', text:'Con compañeros, clientes o personas con las que trabajas, últimamente...',
+      opts:[
+        {t:'Tengo la misma paciencia de siempre.', v:0},
+        {t:'Alguna vez se me escapa algo, pero es raro.', v:1},
+        {t:'A veces noto que respondo más seco/a de lo habitual.', v:2},
+        {t:'Me irrito con más facilidad de lo que me gustaría.', v:3},
+        {t:'Salto por cosas que antes ni registraba.', v:4}
+      ]},
+    {dim:'REC', text:'En findes o vacaciones, sobre recuperarte de verdad...',
+      opts:[
+        {t:'Me recupero sin problema.', v:0},
+        {t:'Me recupero bien, aunque el primer día cueste un poco.', v:1},
+        {t:'Me cuesta desconectar del todo, pero algo recupero.', v:2},
+        {t:'Me cuesta bastante recuperarme de verdad.', v:3},
+        {t:'Ni con días libres siento que recupero energía.', v:4}
+      ]},
+    {dim:'VIN', text:'Sobre alejarte de tu trabajo actual, aunque sea solo con la imaginación...',
+      opts:[
+        {t:'No lo pienso, estoy a gusto donde estoy.', v:0},
+        {t:'Lo pienso muy de vez en cuando, sin darle vueltas.', v:1},
+        {t:'A veces me imagino haciendo otra cosa.', v:2},
+        {t:'Pienso con frecuencia en alejarme de esto.', v:3},
+        {t:'Pienso en irme casi todos los días.', v:4}
+      ]},
+    {dim:'PRE', text:'Al terminar el día, sobre lo que sientes que has avanzado de verdad...',
+      opts:[
+        {t:'Casi siempre siento que he avanzado de verdad.', v:0},
+        {t:'La mayoría de días avanzo lo que esperaba.', v:1},
+        {t:'A veces termino sin sensación de haber avanzado.', v:2},
+        {t:'Con frecuencia siento que no he avanzado nada real.', v:3},
+        {t:'Casi cada día termino con la sensación de no haber avanzado.', v:4}
+      ]},
+    {dim:'LIM', text:'El trabajo y tu vida personal o familiar...',
+      opts:[
+        {t:'Están bien diferenciados, sin fricción.', v:0},
+        {t:'Hay roce puntual, pero nada serio.', v:1},
+        {t:'A veces el trabajo afecta a mi vida personal.', v:2},
+        {t:'El trabajo afecta con frecuencia a mi vida personal o familiar.', v:3},
+        {t:'El trabajo está afectando claramente a mi vida personal.', v:4}
+      ]},
+    {dim:'ENE', text:'De las cosas que antes te gustaba hacer fuera del trabajo (deporte, quedar, aficiones)...',
+      opts:[
+        {t:'Sigo haciéndolas igual que siempre.', v:0},
+        {t:'He dejado alguna, pero por elección, no por cansancio.', v:1},
+        {t:'Algunas las he ido dejando porque no me quedan fuerzas.', v:2},
+        {t:'He dejado varias cosas que disfrutaba por falta de energía.', v:3},
+        {t:'Casi todo lo que disfrutaba ha quedado aparcado.', v:4}
+      ]},
+    {dim:'REC', text:'Cuando termina tu jornada, sobre desconectar mentalmente del trabajo...',
+      opts:[
+        {t:'Desconecto sin esfuerzo.', v:0},
+        {t:'Me cuesta un rato al principio, pero desconecto.', v:1},
+        {t:'A veces sigo dándole vueltas al trabajo por la noche.', v:2},
+        {t:'Me cuesta bastante dejar de pensar en el trabajo.', v:3},
+        {t:'Casi nunca desconecto del todo, ni de noche.', v:4}
+      ], inertia:true},
+    {dim:'VIN', text:'Sobre tu propia capacidad profesional, comparado con antes...',
+      opts:[
+        {t:'Confío en ella tanto como siempre.', v:0},
+        {t:'Tengo alguna duda puntual, normal.', v:1},
+        {t:'A veces dudo más de lo que solía.', v:2},
+        {t:'Dudo con frecuencia de si estoy a la altura.', v:3},
+        {t:'Dudo constantemente de mi propia capacidad.', v:4}
+      ]},
+    {dim:'PRE', text:'Tu carga de responsabilidades o presión actual...',
+      opts:[
+        {t:'Es manejable, sin más.', v:0},
+        {t:'Es alta en algunos momentos puntuales.', v:1},
+        {t:'Vivo con bastante presión de forma habitual.', v:2},
+        {t:'Siento que tengo demasiadas responsabilidades encima.', v:3},
+        {t:'La presión y las responsabilidades me desbordan.', v:4}
+      ]},
+    {dim:'LIM', text:'Cuando te piden asumir una tarea o responsabilidad nueva...',
+      opts:[
+        {t:'Digo que no cuando no puedo, sin problema.', v:0},
+        {t:'Casi siempre puedo decir que no si hace falta.', v:1},
+        {t:'A veces me cuesta decir que no.', v:2},
+        {t:'Me cuesta bastante decir que no.', v:3},
+        {t:'Casi nunca digo que no, aunque debería.', v:4}
+      ], inertia:true},
+    {dim:'ENE', text:'Tu estado de ánimo, comparado con hace un año, y cuánto lo achacas al trabajo...',
+      opts:[
+        {t:'Es el mismo, o incluso mejor.', v:0},
+        {t:'Ha empeorado un poco, y el trabajo influye algo.', v:1},
+        {t:'Ha empeorado algo, y el trabajo influye bastante.', v:2},
+        {t:'Ha empeorado bastante, y el trabajo es buena parte del motivo.', v:3},
+        {t:'Ha empeorado mucho, y el trabajo es la causa principal.', v:4}
+      ]},
+    {dim:'REC', text:'En los últimos meses, tu cuerpo (dolores de cabeza, tensión, digestión...)...',
+      opts:[
+        {t:'No ha dado ninguna señal relacionada con el estrés.', v:0},
+        {t:'Alguna molestia puntual, sin darle importancia.', v:1},
+        {t:'Algunas molestias que relaciono con el trabajo.', v:2},
+        {t:'Molestias frecuentes que sé que vienen del estrés laboral.', v:3},
+        {t:'Molestias físicas claras y recurrentes relacionadas con el trabajo.', v:4}
+      ]},
+    {dim:'VIN', text:'En el día a día, sobre implicarte de verdad en lo que haces...',
+      opts:[
+        {t:'Me siento implicado/a en lo que hago.', v:0},
+        {t:'La mayoría de las veces me implico de verdad.', v:1},
+        {t:'A veces noto que voy en automático, sin más.', v:2},
+        {t:'Con frecuencia hago las cosas sin implicarme realmente.', v:3},
+        {t:'Estoy casi todo el tiempo en modo automático.', v:4}
+      ]},
+    {dim:'PRE', text:'El ritmo de trabajo, comparado con lo que puedes dar...',
+      opts:[
+        {t:'Va acorde a lo que puedo dar.', v:0},
+        {t:'A veces va un poco más rápido, sin problema.', v:1},
+        {t:'A veces el ritmo supera lo que tengo para dar.', v:2},
+        {t:'Con frecuencia el ritmo supera mis recursos.', v:3},
+        {t:'El ritmo me supera casi todos los días.', v:4}
+      ]},
+    {dim:'LIM', text:'Aunque notas que necesitas parar o cambiar algo...',
+      opts:[
+        {t:'Cuando lo noto, hago algo al respecto.', v:0},
+        {t:'Casi siempre actúo si lo necesito.', v:1},
+        {t:'A veces sigo como si nada, aunque lo note.', v:2},
+        {t:'Con frecuencia sigo funcionando igual, aunque lo necesite.', v:3},
+        {t:'Sigo funcionando como si nada, aunque sé que necesito cambiar algo.', v:4}
+      ], inertia:true},
+    {dim:null, inertia:true,
+      text:'Última pregunta, algo distinta: sobre si esta situación va a mejorar con el tiempo, sin que tú cambies nada por tu parte...',
+      opts:[
+        {t:'No espero que mejore sola; si quiero un cambio, lo busco yo.', v:0},
+        {t:'Sé que tengo que mover algo, y ya lo estoy haciendo.', v:1},
+        {t:'Una parte de mí espera que mejore sola, aunque sé que no es muy realista.', v:2},
+        {t:'Sigo esperando que la situación mejore por sí sola.', v:3},
+        {t:'Llevo tiempo esperando que esto se resuelva solo, sin hacer cambios.', v:4}
+      ]}
+  ];
+
+  let current = 0;
+  const dimScores = {ENE:0, REC:0, VIN:0, PRE:0, LIM:0};
+  let totalScore = 0;
+  let inerciaScore = 0;
+
+  const introScreen = document.getElementById('rdIntro');
+  const caseScreen = document.getElementById('rdCaseScreen');
+  const resultsScreen = document.getElementById('rdResults');
+  const progressFill = document.getElementById('rdProgressFill');
+  const progressLabel = document.getElementById('rdProgressLabel');
+  const cardLabel = document.getElementById('rdCardLabel');
+  const scenarioText = document.getElementById('rdScenarioText');
+  const optionsWrap = document.getElementById('rdOptions');
+  const card = document.getElementById('rdCard');
+
+  document.getElementById('rdStartBtn').addEventListener('click', () => {
+    introScreen.classList.remove('active');
+    caseScreen.classList.add('active');
+    renderCase();
+  });
+
+  function renderCase(){
+    const data = CASES[current];
+    cardLabel.textContent = 'Situación ' + (current+1);
+    scenarioText.textContent = data.text;
+    optionsWrap.innerHTML = '';
+    data.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'rd-option';
+      btn.type = 'button';
+      btn.textContent = opt.t;
+      btn.addEventListener('click', () => selectOption(data, opt.v, btn));
+      optionsWrap.appendChild(btn);
+    });
+    progressFill.style.width = Math.round((current/CASES.length)*100) + '%';
+    progressLabel.textContent = 'Situación ' + (current+1) + ' de ' + CASES.length;
+    card.style.animation = 'none';
+    void card.offsetWidth;
+    card.style.animation = null;
+  }
+
+  function selectOption(data, value, btn){
+    Array.from(optionsWrap.children).forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    if (data.dim){
+      dimScores[data.dim] += value;
+      totalScore += value;
+    }
+    if (data.inertia){
+      inerciaScore += value;
+    }
+    setTimeout(() => {
+      current += 1;
+      if (current < CASES.length){
+        renderCase();
+      } else {
+        progressFill.style.width = '100%';
+        progressLabel.textContent = 'Completado';
+        setTimeout(showResults, 350);
+      }
+    }, 260);
+  }
+
+  function showResults(){
+    caseScreen.classList.remove('active');
+    resultsScreen.classList.add('active');
+    buildTotal();
+    buildRadar();
+    buildLegend();
+    buildInercia();
+    buildReading();
+    buildCta();
+    buildFicha();
+  }
+
+  function buildCta(){
+    const btn = document.getElementById('rdCtaBtn');
+    const q = document.querySelector('.rd-reflect label');
+    if (totalScore<=16) q.textContent = '¿Qué te está ayudando ahora a estar bien, y qué harías en los próximos tres meses para protegerlo?';
+    else if (totalScore<=32) q.textContent = '¿Qué señal de estas te gustaría atender antes de que crezca durante los próximos tres meses?';
+    else q.textContent = 'Si pudieras cambiar una sola cosa de esto en los próximos tres meses, ¿cuál sería?';
+    if (totalScore<=16) btn.textContent = 'Quiero cuidar lo que ya funciona →';
+    else if (totalScore<=32) btn.textContent = 'Quiero entender estas señales →';
+    else btn.textContent = 'Quiero profundizar en esto →';
+  }
+
+  const TOOLS = {
+    ENE:{title:'Auditoría de energía de tres días',
+      intro:'Durante tres días, anota brevemente:',
+      items:['Qué situaciones o tareas me drenan.','Qué actividades, personas o momentos me aportan energía.','Qué necesidad estoy dejando sistemáticamente para después.'],
+      note:'El propósito es reconocer patrones, no añadir una obligación de seguimiento pesada.',
+      action:'Durante tres días, al acabar la tarde, anoto una cosa que me drenó y otra que me dio energía.',
+      talk:'Quién decide sobre la tarea o situación que más me drena, y qué le pediría (acotarla, reasignarla, cambiarla de momento).'},
+    REC:{title:'Cierre de jornada de cinco minutos',
+      intro:'Al final de la jornada, anota:',
+      items:['Qué queda pendiente.','Cuál es el siguiente paso concreto.','Qué puede esperar.','Qué necesito para marcar la transición entre trabajo y vida personal.'],
+      note:'Es una herramienta posible, no una solución suficiente cuando la carga de trabajo es excesiva de forma estructural.',
+      action:'Cada día, antes de cerrar, cinco minutos: lo pendiente, el siguiente paso concreto y lo que puede esperar.',
+      talk:'Con mi responsable o mi equipo: qué cosas no necesitan respuesta fuera de horario.'},
+    VIN:{title:'Mapa de desconexión profesional',
+      intro:'Reflexiona sobre:',
+      items:['Qué valoraba antes de mi trabajo.','Qué situaciones me están alejando de ello.','Qué pequeña decisión, conversación o cambio podría ayudarme a recuperar sentido o conexión.'],
+      note:'No presupone que volver a conectar con el puesto actual sea siempre posible o deseable. Cambiar de puesto u organización también puede ser una opción legítima.',
+      action:'Escribo qué valoraba de mi trabajo y qué situación me aleja de ello, y elijo una pequeña decisión o conversación.',
+      talk:'Con una persona de confianza o con mi responsable: qué parte de mi trabajo tiene más sentido para mí y cómo tener más de ella.'},
+    PRE:{title:'Matriz de control e influencia',
+      intro:'Es la herramienta central de tu ficha. Más abajo, clasifica lo que te pesa en tres grupos:',
+      items:['Depende de mí.','Puedo influir.','No depende de mí.'],
+      note:'Sirve para orientar tu energía y reconocer cuándo hacen falta cambios o apoyos externos.',
+      action:'Elijo una cuestión de «puedo influir» y preparo la petición concreta que haría esta semana.',
+      talk:'Quién decide prioridades o recursos, y qué petición concreta le haría.'},
+    LIM:{title:'Guion para negociar prioridades',
+      intro:'Prueba esta formulación y adáptala a tu contexto:',
+      quote:'«Puedo asumir esta tarea, pero no mantener todas las prioridades actuales. ¿Qué dejamos para después o qué podemos reasignar?»',
+      note:'Convierte un límite abstracto en una conversación concreta. Ajústala al margen real de negociación que tengas.',
+      action:'Uso este guion una vez esta semana, ante una petición nueva.',
+      talk:'Quién me hace las peticiones y qué prioridad pediría que se aclarase.'},
+    NONE:{title:'Proteger lo que ya funciona',
+      intro:'Tus señales son bajas. Lo útil ahora es reconocer y cuidar lo que te sostiene:',
+      items:['Qué hábitos, personas o condiciones de tu trabajo te están ayudando.','Qué podría ponerlos en riesgo.','Qué harías si cambia tu carga o tu entorno.'],
+      note:'',
+      action:'Elijo un hábito o condición que me ayuda y decido cómo protegerlo esta semana.',
+      talk:''}
+  };
+  let fichaKey = null, fichaTops = [];
+
+  function buildFicha(){
+    const order = ['ENE','REC','VIN','PRE','LIM'];
+    const max = Math.max(...order.map(k=>dimScores[k]));
+    fichaTops = max<=2 ? ['NONE'] : order.filter(k=>dimScores[k]===max);
+    const hi = totalScore>=33, inH = inerciaScore>=9;
+    let lead;
+    if (!hi && inH) lead = 'Tu desgaste es bajo, pero tu inercia es alta: quizá haya un cambio que llevas tiempo posponiendo. Explora cuál es y qué lo dificulta.';
+    else if (hi && !inH) lead = 'Reconoces señales claras y sueles moverte: elige una acción prioritaria y evita intentar resolverlo todo de golpe.';
+    else if (hi && inH) lead = 'Hay señales claras y barreras para actuar. Reduce exigencias donde puedas, busca apoyos y distingue qué cambios dependen de tu organización.';
+    else lead = 'Tus señales son bajas y sueles moverte: lo más útil es reconocer y proteger los recursos y hábitos que ya te funcionan.';
+    document.getElementById('rdFichaLead').textContent = lead + ' (Lectura orientativa, no un diagnóstico.)';
+    const tabs = document.getElementById('rdTabs');
+    tabs.innerHTML = '';
+    if (fichaTops.length>1){
+      const hint = document.createElement('span');
+      hint.className = 'rd-tabs-hint';
+      hint.textContent = 'Varias señales empatan. Elige con cuál quieres trabajar ahora:';
+      tabs.appendChild(hint);
+      fichaTops.forEach(k => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'rd-tab'; b.textContent = DIMS[k].name; b.dataset.k = k;
+        b.addEventListener('click', () => applyTool(k));
+        tabs.appendChild(b);
+      });
+    }
+    applyTool(fichaTops[0]);
+  }
+
+  function applyTool(k){
+    fichaKey = k;
+    const t = TOOLS[k], none = (k==='NONE');
+    document.querySelectorAll('#rdTabs .rd-tab').forEach(b => b.classList.toggle('on', b.dataset.k===k));
+    let h = '<h3></h3><p></p>';
+    if (t.items) h += '<ul>' + t.items.map(()=>'<li></li>').join('') + '</ul>';
+    if (t.quote) h += '<p class="rd-quote"></p>';
+    if (t.note) h += '<p class="rd-note"></p>';
+    const box = document.getElementById('rdTool');
+    box.innerHTML = h;
+    box.querySelector('h3').textContent = t.title;
+    box.querySelector('p').textContent = t.intro;
+    if (t.items) box.querySelectorAll('li').forEach((li,i)=>{ li.textContent = t.items[i]; });
+    if (t.quote) box.querySelector('.rd-quote').textContent = t.quote;
+    if (t.note) box.querySelector('.rd-note').textContent = t.note;
+    document.getElementById('rdFichaSignal').textContent = none
+      ? 'Mi señal principal: ninguna destaca por ahora'
+      : 'Mi señal principal: ' + DIMS[k].name + ' (' + dimScores[k] + ' / 16)';
+    document.getElementById('l_ocurre').textContent = none ? 'Qué me está ayudando ahora' : 'Qué está ocurriendo en mi caso';
+    document.getElementById('rdMatrix').style.display = none ? 'none' : '';
+    document.getElementById('rdConvField').style.display = none ? 'none' : '';
+    document.getElementById('f_accion').placeholder = 'Por ejemplo: ' + t.action;
+    document.getElementById('f_conv').placeholder = t.talk;
+  }
+
+  function copyFicha(){
+    const v = id => document.getElementById(id).value.trim();
+    const L = ['MI PRIMER PASO PARA RECUPERAR MARGEN','Test de desgaste e inercia laboral','',
+      'Desgaste: ' + totalScore + ' / 80 · Inercia: ' + inerciaScore + ' / 16',
+      document.getElementById('rdFichaSignal').textContent];
+    const add = (t,id) => { const x = v(id); if (x) L.push('', t + ':', x); };
+    add(document.querySelector('.rd-reflect label').textContent,'rdReflectInput');
+    if (fichaKey==='NONE'){ add('Qué me está ayudando ahora','f_ocurre'); }
+    else {
+      add('Qué está ocurriendo en mi caso','f_ocurre');
+      add('Depende de mí','f_dep'); add('Puedo influir','f_inf'); add('No depende de mí','f_nodep');
+    }
+    add('Mi acción realista para los próximos 7 días','f_accion');
+    if (fichaKey!=='NONE') add('Qué conversación o petición podría ayudar','f_conv');
+    add('Cómo sabré si me ayuda','f_senal');
+    const text = L.join('\n');
+    const done = () => { const m = document.getElementById('rdCopyMsg'); m.style.display = 'inline'; setTimeout(()=>{ m.style.display = 'none'; }, 3000); };
+    const fallback = () => {
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); done(); } catch(e) {} document.body.removeChild(ta);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  }
+  document.getElementById('rdCopyBtn').addEventListener('click', copyFicha);
+
+  function getTotalBand(t){
+    if (t<=16) return {label:'Desgaste bajo', color:'#8E9B6C',
+      text:'Por ahora tu balance parece sostenible. Vale la pena seguir prestando atención, sobre todo si algo cambia en tu entorno de trabajo.'};
+    if (t<=32) return {label:'Primeras señales', color:'#C9A23D',
+      text:'Empiezan a asomar señales tempranas. Es un buen momento para mirarlas antes de que se acumulen.'};
+    if (t<=48) return {label:'Desgaste moderado', color:'#C97B3D',
+      text:'Hay varias señales presentes de forma sostenida. Esto no es un fallo tuyo — es información valiosa sobre lo que está pasando.'};
+    if (t<=64) return {label:'Desgaste elevado', color:'#A5556B',
+      text:'El desgaste está bastante presente en tu día a día. Merece una atención real, no solo buena voluntad.'};
+    return {label:'Señales de desgaste muy elevadas', color:'#8B3A3A',
+      text:'Las señales que reconoces son intensas y sostenidas. Merecen atención real, y no tienes que resolverlo todo por tu cuenta.'};
+  }
+
+  function buildTotal(){
+    const band = getTotalBand(totalScore);
+    document.getElementById('rdTotalScore').textContent = totalScore + ' / 80';
+    const bandEl = document.getElementById('rdTotalBand');
+    bandEl.textContent = band.label;
+    bandEl.style.background = band.color;
+    document.getElementById('rdTotalBarFill').style.width = Math.round((totalScore/80)*100) + '%';
+    document.getElementById('rdTotalBarFill').style.background = band.color;
+    document.getElementById('rdTotalText').textContent = band.text;
+  }
+
+  function buildRadar(){
+    const order = ['ENE','REC','VIN','PRE','LIM'];
+    const size = 400, cx = size/2, cy = size/2, R = 108;
+    const angleFor = i => (-90 + i*72) * Math.PI/180;
+    const maxScore = 16;
+
+    function pt(i, frac){
+      const a = angleFor(i);
+      const r = R * frac;
+      return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+    }
+
+    let rings = '';
+    [0.25,0.5,0.75,1].forEach(f => {
+      let pts = order.map((_,i)=>pt(i,f).join(',')).join(' ');
+      rings += `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,.14)" stroke-dasharray="3,4" stroke-width="1"/>`;
+    });
+
+    let axes = '', labels = '';
+    order.forEach((k,i) => {
+      const [x,y] = pt(i,1);
+      axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.16)" stroke-width="1"/>`;
+      const [lx,ly] = pt(i,1.12);
+      const anchor = i===1 ? 'start' : i===4 ? 'end' : 'middle';
+      const ly2 = (i===2 || i===3) ? ly+8 : ly;
+      labels += `<text x="${lx}" y="${ly2}" fill="#B9C7C2" font-size="11" font-family="Work Sans, sans-serif" text-anchor="${anchor}" dominant-baseline="middle">${DIMS[k].name}</text>`;
+    });
+
+    const dataPts = order.map((k,i) => {
+      const frac = Math.min(dimScores[k]/maxScore, 1);
+      return pt(i, Math.max(frac,0.05));
+    });
+    const dataPolygon = dataPts.map(p=>p.join(',')).join(' ');
+    const maxS = Math.max(...order.map(k=>dimScores[k]));
+    const radarColor = maxS<=2 ? '#B9C7C2' : DIMS[order.find(k=>dimScores[k]===maxS)].color;
+
+    const svg = `
+      <svg width="${size}" height="${size}" style="max-width:100%;height:auto" viewBox="0 0 ${size} ${size}">
+        ${rings}
+        ${axes}
+        <polygon points="${dataPolygon}" fill="${radarColor}22" stroke="${radarColor}" stroke-width="2" stroke-linejoin="round"
+          style="opacity:0; animation: rdFadeIn .7s ease .15s forwards;"/>
+        ${dataPts.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="4" fill="${DIMS[order[i]].color}"/>`).join('')}
+        ${labels}
+      </svg>
+      <style>@keyframes rdFadeIn{to{opacity:1;}}</style>
+    `;
+    document.getElementById('rdRadarSvg').innerHTML = svg;
+  }
+
+  function buildLegend(){
+    const order = ['ENE','REC','VIN','PRE','LIM'];
+    const legend = document.getElementById('rdLegend');
+    legend.innerHTML = '';
+    order.slice().sort((a,b)=>dimScores[b]-dimScores[a]).forEach(k => {
+      const row = document.createElement('div');
+      row.className = 'rd-legend-row';
+      row.innerHTML = `<span class="rd-dot" style="background:${DIMS[k].color}"></span>
+        <span class="rd-legend-name">${DIMS[k].name}</span>
+        <span class="rd-legend-pct">${dimScores[k]} / 16</span>`;
+      legend.appendChild(row);
+    });
+  }
+
+  function getInerciaBand(s){
+    if (s<=4) return 'Sueles moverte pronto cuando algo no funciona. Cuando notas una señal, tiendes a actuar.';
+    if (s<=8) return 'Hay algo de margen de espera en ti, pero en general te mueves antes de que la situación se enquiste.';
+    if (s<=12) return 'Aparece un patrón de esperar a que las cosas mejoren solas, incluso cuando notas que algo no va bien.';
+    return 'Aparece con fuerza la espera a que esto se resuelva solo. No es falta de voluntad: suele haber barreras, falta de recursos o condiciones que no dependen solo de ti. Vale la pena explorar cuáles.';
+  }
+
+  function buildInercia(){
+    document.getElementById('rdInerciaScore').textContent = inerciaScore + ' / 16';
+    document.getElementById('rdInerciaBarFill').style.width = Math.round((inerciaScore/16)*100) + '%';
+    document.getElementById('rdInerciaText').textContent = getInerciaBand(inerciaScore);
+  }
+
+  const DIMS_MID = {
+    ENE:'Es donde primero se nota el roce: a veces te queda menos energía de la que te gustaría para el resto del día o para lo que disfrutas. Todavía no es un patrón fuerte, pero conviene mirarlo a tiempo.',
+    REC:'Es donde primero se nota el roce: a veces el descanso o la desconexión no te recargan del todo. Todavía no es un patrón fuerte, pero conviene cuidarlo a tiempo.',
+    VIN:'Es donde primero se nota el roce: de vez en cuando aparece menos ilusión o más piloto automático con lo que haces. Todavía no es un patrón fuerte, pero conviene mirarlo a tiempo.',
+    PRE:'Es donde primero se nota el roce: hay momentos en que el ritmo o las responsabilidades superan lo que puedes dar. Todavía no es un patrón fuerte, pero conviene mirarlo a tiempo.',
+    LIM:'Es donde primero se nota el roce: a veces te cuesta decir que no o parar a tiempo. Todavía no es un patrón fuerte, pero conviene mirarlo a tiempo.'
+  };
+
+  function buildReading(){
+    const order = ['ENE','REC','VIN','PRE','LIM'];
+    const max = Math.max(...order.map(k=>dimScores[k]));
+    const tops = order.filter(k=>dimScores[k]===max);
+    const names = tops.map(k=>DIMS[k].name);
+    const list = names.length>1 ? names.slice(0,-1).join(', ')+' y '+names[names.length-1] : names[0];
+    let title, body;
+    if (max<=2){
+      title = 'Lo que muestran tus respuestas';
+      body = 'Ninguna dimensión destaca: no aparecen señales relevantes de desgaste esta semana. Lo útil ahora es mantener lo que ya te funciona y volver a mirarlo si cambia tu carga o tu entorno.';
+    } else if (max<=7){
+      title = 'Dónde empieza a notarse';
+      body = tops.length===1
+        ? DIMS[tops[0]].name+': '+DIMS_MID[tops[0]]
+        : 'Las señales aún son suaves y están repartidas, con algo más de peso en '+list+'. Todavía no es un patrón fuerte, pero conviene mirarlo a tiempo.';
+    } else {
+      title = 'Lo que más se repite';
+      body = tops.length===1
+        ? DIMS[tops[0]].text
+        : tops.length===2
+          ? DIMS[tops[0]].text+' A la vez, '+DIMS[tops[1]].text.charAt(0).toLowerCase()+DIMS[tops[1]].text.slice(1)
+          : 'Varias dimensiones empatan en lo más alto ('+list+'). El desgaste no se concentra en un solo punto: está repartido por varias áreas de tu día a día.';
+    }
+    document.getElementById('rdReading').innerHTML = '<h3></h3><p></p>';
+    document.querySelector('#rdReading h3').textContent = title;
+    document.querySelector('#rdReading p').textContent = body;
+  }
+
+  document.getElementById('rdCtaBtn').addEventListener('click', () => {
+    document.getElementById('rdThanks').style.display = 'inline';
+  });
+})();
+</script>
