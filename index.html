@@ -164,6 +164,17 @@
   .rd-matrix{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px;}
   .rd-matrix .rd-field{margin-bottom:0;}
   .rd-matrix label{font-size:13.5px;}
+  .rd-tech{margin-top:14px; font-size:13px; color:var(--paper-dim); max-width:520px;}
+  .rd-tech summary{cursor:pointer; color:var(--muted-on-dark); text-decoration:underline; text-underline-offset:3px; width:fit-content;}
+  .rd-tech summary:hover{color:var(--paper);}
+  .rd-tech-body{margin-top:10px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:14px 16px;}
+  .rd-tech-body h4{font-family:'Fraunces', serif; font-size:14.5px; color:var(--paper); margin:0 0 8px; font-weight:600;}
+  .rd-tech-body ul{margin:0; padding-left:18px;}
+  .rd-tech-body li{font-size:13px; line-height:1.55; color:var(--paper-dim); margin:0 0 7px;}
+  .rd-tech-body li strong{color:var(--paper); font-weight:600;}
+  .rd-case-tech{padding:0 24px 22px; display:flex; justify-content:center;}
+  .rd-case-tech .rd-tech{margin-top:0; width:100%;}
+  a.rd-cta-btn{display:inline-block; text-decoration:none; margin-top:6px;}
   .rd-copy-msg{font-size:13px; color:var(--rec); display:none;}
 
   @media (max-width:520px){
@@ -198,6 +209,7 @@
       <span class="rd-dim-chip" style="background:var(--pre)">Presión</span>
       <span class="rd-dim-chip" style="background:var(--lim)">Límites</span>
     </div>
+    <div class="rd-tech-slot"></div>
     <button class="rd-start-btn" id="rdStartBtn">Empezar · 5 minutos →</button>
   </div>
 
@@ -214,6 +226,7 @@
         <div class="rd-options" id="rdOptions"></div>
       </div>
     </div>
+    <div class="rd-case-tech"><div class="rd-tech-slot"></div></div>
   </div>
 
   <!-- RESULTS -->
@@ -302,10 +315,12 @@
         <p class="rd-cta-note" style="margin-top:10px">Lo que escribes se queda en tu navegador. No se envía a ningún sitio.</p>
       </div>
 
-      <div class="rd-cta" style="margin-top:30px">
-        <button class="rd-cta-btn" id="rdCtaBtn">Quiero profundizar en esto →</button>
-        <span class="rd-cta-note">Prototipo — aquí iría el enlace a tu recurso o a agendar una conversación.</span>
-        <span class="rd-thanks" id="rdThanks">Gracias — esto quedaría enviado a tu proceso de seguimiento.</span>
+      <div class="rd-tech-slot" style="margin-bottom:6px"></div>
+
+      <div class="rd-info rd-book" style="margin-top:30px">
+        <h3>¿Quieres comentar tu resultado?</h3>
+        <p>Reserva una conversación de 30 minutos conmigo, sin compromiso, para revisar lo que ha salido en tu test y decidir qué primer paso tiene sentido para ti.</p>
+        <a class="rd-cta-btn" id="rdCtaBtn" href="https://calendly.com/raulplaorti/30min" target="_blank" rel="noopener">Reservar mi conversación de 30 minutos →</a>
       </div>
     </div>
   </div>
@@ -576,14 +591,10 @@
   }
 
   function buildCta(){
-    const btn = document.getElementById('rdCtaBtn');
     const q = document.querySelector('.rd-reflect label');
     if (totalScore<=16) q.textContent = '¿Qué te está ayudando ahora a estar bien, y qué harías en los próximos tres meses para protegerlo?';
     else if (totalScore<=32) q.textContent = '¿Qué señal de estas te gustaría atender antes de que crezca durante los próximos tres meses?';
     else q.textContent = 'Si pudieras cambiar una sola cosa de esto en los próximos tres meses, ¿cuál sería?';
-    if (totalScore<=16) btn.textContent = 'Quiero cuidar lo que ya funciona →';
-    else if (totalScore<=32) btn.textContent = 'Quiero entender estas señales →';
-    else btn.textContent = 'Quiero profundizar en esto →';
   }
 
   const TOOLS = {
@@ -704,6 +715,31 @@
     else fallback();
   }
   document.getElementById('rdCopyBtn').addEventListener('click', copyFicha);
+
+  const TECH = [
+    ['Qué es', 'Una herramienta propia de autoobservación y sensibilización, creada por Raúl Plá. No es una prueba diagnóstica y no determina si una persona tiene burnout.'],
+    ['Cómo usar las puntuaciones', 'Son orientativas. No deben utilizarse para diagnosticar ni para tomar decisiones laborales sobre una persona (selección, evaluación, promoción o despido). Los tramos de puntuación y el Índice de Inercia son criterios propios, no baremos oficiales.'],
+    ['En qué se inspira', 'En modelos como el Maslach Burnout Inventory, el Copenhagen Burnout Inventory, el Oldenburg Burnout Inventory y el modelo JD-R. No equivale a esos instrumentos ni es una versión de ellos, y no debe presentarse como un test validado: no ha pasado por un proceso de validación psicométrica.'],
+    ['Tus datos', 'Tus respuestas, tus resultados y lo que escribes en la ficha se quedan en tu navegador. No se envían a Raúl Plá. Tú decides si quieres compartirlos en una conversación posterior. Si reservas una cita, los datos de la reserva los gestiona Calendly.']
+  ];
+  document.querySelectorAll('.rd-tech-slot').forEach(slot => {
+    const d = document.createElement('details');
+    d.className = 'rd-tech';
+    const sm = document.createElement('summary');
+    sm.textContent = 'Ficha técnica del test';
+    const body = document.createElement('div');
+    body.className = 'rd-tech-body';
+    const ul = document.createElement('ul');
+    TECH.forEach(([t,x]) => {
+      const li = document.createElement('li');
+      const st = document.createElement('strong'); st.textContent = t + '. ';
+      li.appendChild(st); li.appendChild(document.createTextNode(x));
+      ul.appendChild(li);
+    });
+    body.appendChild(ul);
+    d.appendChild(sm); d.appendChild(body);
+    slot.appendChild(d);
+  });
 
   function getTotalBand(t){
     if (t<=16) return {label:'Desgaste bajo', color:'#8E9B6C',
@@ -842,8 +878,5 @@
     document.querySelector('#rdReading p').textContent = body;
   }
 
-  document.getElementById('rdCtaBtn').addEventListener('click', () => {
-    document.getElementById('rdThanks').style.display = 'inline';
-  });
 })();
 </script>
